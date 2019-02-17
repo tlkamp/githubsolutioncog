@@ -31,10 +31,10 @@ class GithubSolution(Cog):
 
     @command()
     #@checks.role
-    async def solution(self, ctx, issue: int = None, summary: str = None):
+    async def solution(self, ctx, issue: int = None, *, summary: str = None):
         """
         Posts a solution summary to a GitHub issue.
-        Example: [p]solution 123 "The user did not try turning it off/on again."
+        Example: [p]solution 123 The user did not try turning it off/on again.
         """
         embed = Embed(title=f'Solution to #{issue} posted!', colour=ctx.author.colour, url='https://github.com/tlkamp')
         embed.add_field(name='Summary', value=summary)
