@@ -4,7 +4,7 @@ from redbot.core import checks
 from discord import Embed
 
 
-class GitHubSolution(Cog):
+class GithubSolution(Cog):
     """Posts a solution summary to a GitHub issue."""
     def __init__(self):
         self.config = Config.get_conf(self, identifier=9900990099)

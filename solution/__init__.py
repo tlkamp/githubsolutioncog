@@ -1,5 +1,5 @@
-from .solution import GitHubSolution
+from .solution import GithubSolution
 
 
 def setup(bot):
-    bot.add_cog(GitHubSolution())
+    bot.add_cog(GithubSolution())
