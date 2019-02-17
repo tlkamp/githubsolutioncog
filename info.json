@@ -1,7 +1,7 @@
 {
     "AUTHOR" : "tlkamp",
     "INSTALL_MSG" : "",
-    "NAME" : "tlkamp cogs",
-    "SHORT" : "Cogs written by tlkamp",
-    "DESCRIPTION" : ""
+    "NAME" : "githubsolutioncog",
+    "SHORT" : "Cogs written to make cross-posting between Discord and GitHub simpler.",
+    "DESCRIPTION" : "Cogs written to make cross-posting between Discord and GitHub simpler."
 }

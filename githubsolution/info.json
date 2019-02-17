@@ -5,6 +5,6 @@
     "SHORT" : "Posts a solution summary to a GitHub issue.",
     "DESCRIPTION" : "Posts a solution summary to a GitHub issue.",
     "TAGS" : ["github", "issue", "solution"],
-    "REQUIREMENTS" : [],
+    "REQUIREMENTS" : ["github3.py"],
     "HIDDEN" : false
 }
