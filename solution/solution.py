@@ -21,6 +21,9 @@ class GitHubSolution(Cog):
         Sets the GitHub URL to project_url.
         Default is None.
         """
+        if not ctx.guild:
+            await ctx.send('You must be in a server channel to use this command.')
+            return
         new_url = project_url.replace('<', '').replace('>', '')
         old_url = await self.config.guild(ctx.guild).github_url()
         await self.config.guild(ctx.guild).github_url.set(new_url)
