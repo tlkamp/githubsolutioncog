@@ -1,4 +1,4 @@
-from redbot.core.commands import Cog, command
+from redbot.core.commands import Cog, command, guild_only
 from redbot.core import Config
 from redbot.core import checks
 from discord import Embed
@@ -15,20 +15,19 @@ class GithubSolution(Cog):
         self.config.register_guild(**default_guild)
 
     @command()
+    @guild_only()
     @checks.is_owner()
     async def settokenvar(self, ctx, varname: str):
         """
         The environment variable name used to retrieve the GitHub token.
         Only the bot owner can set this value.
         """
-        if not ctx.guild:
-            await ctx.send('You must be in a server channel to use this command.')
-            return
         old_name = await self.config.guild(ctx.guild).github_token_var()
         await self.config.guild(ctx.guild).github_token_var.set(varname)
         await ctx.send(f'Value of `github_token_var` has changed from `{old_name}` to `{varname}`')
 
     @command()
+    @guild_only()
     @checks.admin_or_permissions(manage_guild=True)
     async def setproject(self, ctx, project: str):
         """
@@ -36,9 +35,6 @@ class GithubSolution(Cog):
         Should be in the format namespace/project
         Default is None.
         """
-        if not ctx.guild:
-            await ctx.send('You must be in a server channel to use this command.')
-            return
         old_project = await self.config.guild(ctx.guild).github_project()
         await self.config.guild(ctx.guild).github_project.set(project)
         await ctx.send(f'Value of `github_url` has changed from `{old_project}` to `{project}`')
