@@ -27,6 +27,21 @@ class GithubSolution(Cog):
         await self.config.guild(ctx.guild).close_on_solution.set(autoclose)
         await ctx.send(f'`autoclose` set to {str(autoclose)} from {str(old_value)}')
 
+    @command(invoke_without_command=True)
+    @guild_only()
+    #@checks.mod_or_permissions(manage_roles=True)
+    @checks.is_owner()
+    async def closeissue(self, ctx, issue: int):
+        """Closes an open issue."""
+        gh = await self.login_to_github(ctx)
+        if gh:
+            repo = await self.config.guild(ctx.guild).github_project()
+            iss = gh.issue(repo.split('/')[0], repo.split('/')[1], issue)
+            if iss.close():
+                await ctx.send(f'Issue #{issue} was closed by {ctx.author.mention}')
+            else:
+                await ctx.send(f'Issue #{issue} could not be closed.')
+
     @command()
     @guild_only()
     @checks.is_owner()
@@ -53,7 +68,7 @@ class GithubSolution(Cog):
         await ctx.send(f'Value of `github_url` has changed from `{old_project}` to `{project}`')
 
     @command()
-    async def solution(self, ctx, issue: int = None, *, summary: str = None):
+    async def solution(self, ctx, issue: int = None, close: bool = False, *, summary: str = None):
         """
         Posts a solution summary to a GitHub issue.
         Example: [p]solution 123 The user did not try turning it off/on again.
@@ -67,6 +82,10 @@ class GithubSolution(Cog):
             embed.set_footer(text=f'Thanks, {ctx.author.name}!', icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
 
+            # TODO: Make the checks work here
+            if close:
+                await ctx.invoke(self.closeissue, issue=issue)
+
     async def do_post(self, issue, solution, ctx):
         text = [
             '**Solution**',
@@ -75,14 +94,17 @@ class GithubSolution(Cog):
             f'\n_This solution was posted by Discord user {ctx.author.name}._',
             f'_[View this message on Discord.]({ctx.message.jump_url})_'
         ]
-
-        varname = await self.config.guild(ctx.guild).github_token_var()
-        from os import environ
-        from github3 import login
-        token = environ.get(str(varname), None)
-        if token:
-            gh = login(token=token)
+        gh = await self.login_to_github(ctx)
+        if gh:
             repo = await self.config.guild(ctx.guild).github_project()
             iss = gh.issue(repo.split('/')[0], repo.split('/')[1], issue)
             response = iss.create_comment('\n'.join(text))
             return response.html_url
+
+    async def login_to_github(self, ctx):
+        from os import environ
+        from github3 import login
+        varname = await self.config.guild(ctx.guild).github_token_var()
+        token = environ.get(str(varname), None)
+        if token:
+            return login(token=token)
