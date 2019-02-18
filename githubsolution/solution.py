@@ -10,9 +10,22 @@ class GithubSolution(Cog):
         self.config = Config.get_conf(self, identifier=9900990099, force_registration=True)
         default_guild = {
             "github_project": None,
-            "github_token_var": None
+            "github_token_var": None,
+            "close_on_solution": False
         }
         self.config.register_guild(**default_guild)
+
+    @command()
+    @guild_only()
+    @checks.admin_or_permissions(manage_roles=True)
+    async def setautoclose(self, ctx, autoclose: bool = False):
+        """
+        Automatically close an issue when a solution is posted.
+        """
+        old_value = await self.config.guild(ctx.guild).close_on_solution()
+        old_value = bool(old_value)
+        await self.config.guild(ctx.guild).close_on_solution.set(autoclose)
+        await ctx.send(f'`autoclose` set to {str(autoclose)} from {str(old_value)}')
 
     @command()
     @guild_only()
