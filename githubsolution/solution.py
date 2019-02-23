@@ -29,10 +29,12 @@ class GithubSolution(Cog):
 
     @command(invoke_without_command=True)
     @guild_only()
-    #@checks.mod_or_permissions(manage_roles=True)
-    @checks.is_owner()
-    async def closeissue(self, ctx, issue: int):
+    @checks.mod_or_permissions(manage_roles=True)
+    async def closeissue(self, ctx, issue: int, *, solution: str = None):
         """Closes an open issue."""
+        if solution:
+            await ctx.invoke(self.solution, issue=issue, summary=solution)
+
         gh = await self.login_to_github(ctx)
         if gh:
             repo = await self.config.guild(ctx.guild).github_project()
@@ -68,7 +70,7 @@ class GithubSolution(Cog):
         await ctx.send(f'Value of `github_url` has changed from `{old_project}` to `{project}`')
 
     @command()
-    async def solution(self, ctx, issue: int = None, close: bool = False, *, summary: str = None):
+    async def solution(self, ctx, issue: int, *, summary: str):
         """
         Posts a solution summary to a GitHub issue.
         Example: [p]solution 123 The user did not try turning it off/on again.
@@ -81,10 +83,6 @@ class GithubSolution(Cog):
             embed.add_field(name='Summary', value=summary)
             embed.set_footer(text=f'Thanks, {ctx.author.name}!', icon_url=ctx.author.avatar_url)
             await ctx.send(embed=embed)
-
-            # TODO: Make the checks work here
-            if close:
-                await ctx.invoke(self.closeissue, issue=issue)
 
     async def do_post(self, issue, solution, ctx):
         text = [
