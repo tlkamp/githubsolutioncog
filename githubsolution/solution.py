@@ -27,9 +27,9 @@ class GithubSolution(Cog):
         await self.config.guild(ctx.guild).close_on_solution.set(autoclose)
         await ctx.send(f'`autoclose` set to {str(autoclose)} from {str(old_value)}')
 
+    @command()
     @guild_only()
     @checks.mod_or_permissions(manage_roles=True)
-    @command()
     async def closeissue(self, ctx, issue: int, *, solution: str = None):
         """Closes an open issue."""
         if solution:
