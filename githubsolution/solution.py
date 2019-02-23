@@ -10,9 +10,38 @@ class GithubSolution(Cog):
         self.config = Config.get_conf(self, identifier=9900990099, force_registration=True)
         default_guild = {
             "github_project": None,
-            "github_token_var": None
+            "github_token_var": None,
+            "close_on_solution": False
         }
         self.config.register_guild(**default_guild)
+
+    @command()
+    @guild_only()
+    @checks.admin_or_permissions(manage_roles=True)
+    async def setautoclose(self, ctx, autoclose: bool = False):
+        """
+        Automatically close an issue when a solution is posted.
+        """
+        old_value = await self.config.guild(ctx.guild).close_on_solution()
+        old_value = bool(old_value)
+        await self.config.guild(ctx.guild).close_on_solution.set(autoclose)
+        await ctx.send(f'`autoclose` set to {str(autoclose)} from {str(old_value)}')
+
+    @guild_only()
+    @checks.mod_or_permissions(manage_roles=True)
+    async def closeissue(self, ctx, issue: int, *, solution: str = None):
+        """Closes an open issue."""
+        if solution:
+            await ctx.invoke(self.solution, issue=issue, summary=solution)
+
+        gh = await self.login_to_github(ctx)
+        if gh:
+            repo = await self.config.guild(ctx.guild).github_project()
+            iss = gh.issue(repo.split('/')[0], repo.split('/')[1], issue)
+            if iss.close():
+                await ctx.send(f'Issue #{issue} was closed by {ctx.author.mention}')
+            else:
+                await ctx.send(f'Issue #{issue} could not be closed.')
 
     @command()
     @guild_only()
@@ -40,7 +69,7 @@ class GithubSolution(Cog):
         await ctx.send(f'Value of `github_url` has changed from `{old_project}` to `{project}`')
 
     @command()
-    async def solution(self, ctx, issue: int = None, *, summary: str = None):
+    async def solution(self, ctx, issue: int, *, summary: str):
         """
         Posts a solution summary to a GitHub issue.
         Example: [p]solution 123 The user did not try turning it off/on again.
@@ -62,14 +91,17 @@ class GithubSolution(Cog):
             f'\n_This solution was posted by Discord user {ctx.author.name}._',
             f'_[View this message on Discord.]({ctx.message.jump_url})_'
         ]
-
-        varname = await self.config.guild(ctx.guild).github_token_var()
-        from os import environ
-        from github3 import login
-        token = environ.get(str(varname), None)
-        if token:
-            gh = login(token=token)
+        gh = await self.login_to_github(ctx)
+        if gh:
             repo = await self.config.guild(ctx.guild).github_project()
             iss = gh.issue(repo.split('/')[0], repo.split('/')[1], issue)
             response = iss.create_comment('\n'.join(text))
             return response.html_url
+
+    async def login_to_github(self, ctx):
+        from os import environ
+        from github3 import login
+        varname = await self.config.guild(ctx.guild).github_token_var()
+        token = environ.get(str(varname), None)
+        if token:
+            return login(token=token)
